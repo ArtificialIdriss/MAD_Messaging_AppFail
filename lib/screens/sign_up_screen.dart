@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:messaging_app/components/my_textfield.dart';
 import 'sign_in_screen.dart';
 import 'package:messaging_app/auth/auth_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   SignUpScreen({Key? key}) : super(key: key);
@@ -18,17 +19,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void signUserUp() async {
     try {
+      // Create a new user with email and password
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
-      // Navigate to the authentication page upon successful sign-up
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => AuthPage()),
-      );
+
+      // Retrieve current user
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Store additional user information in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+          {
+            'email': emailController.text,
+            // Add more user information if needed
+            'uid': user.uid, // Store UID in Firestore
+          },
+          SetOptions(
+            merge: true,
+          ),
+        );
+
+        // Navigate to the authentication page upon successful sign-up
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AuthPage()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
-      // Display error message based on the exception code
+      // Handle authentication errors
       if (e.code == 'user-not-found') {
         showErrorMessage('Incorrect Email');
       } else if (e.code == 'wrong-password') {
