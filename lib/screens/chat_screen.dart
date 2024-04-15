@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
+import 'package:messaging_app/components/chat_bubble.dart';
 import 'package:messaging_app/components/chat_service.dart';
 import 'package:messaging_app/components/my_textfield.dart';
 
@@ -86,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
       child: Column(
         children: [
           Text(data['senderEmail']),
-          Text(data['message']),
+          ChatBubble(message: data['message']),
         ],
       ),
     );
